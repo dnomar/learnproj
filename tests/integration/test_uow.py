@@ -1,6 +1,5 @@
 from src.allocation.service_layer import unit_of_work
 from src.allocation.domain import model
-import pytest
 import uuid
 
 def random_suffix():
@@ -69,7 +68,7 @@ def test_rolls_back_uncommitted_work_by_default(postgres_session):
     rows = list(new_session.execute("SELECT * FROM batches WHERE SKU = 'sku'"))
     assert rows == []
 
-'''
+
 def test_rolls_back_on_error(postgres_session):
     batch_ref = random_batchref("2022")
     sku = random_sku("LARGE-FORK")
@@ -134,4 +133,3 @@ def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory)
     assert len(orders) == 1  #(4)
     with unit_of_work.SqlAlchemyUnitOfWork() as uow:
         uow.session.execute('select 1')
-'''
