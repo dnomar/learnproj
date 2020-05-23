@@ -1,6 +1,12 @@
 from src.allocation.service_layer import unit_of_work
 from src.allocation.domain import model
 import uuid
+import pytest
+import time
+import traceback
+import threading
+from typing import List
+from tests.conftest import *
 
 def random_suffix():
     return uuid.uuid4().hex[:6]
@@ -14,11 +20,11 @@ def random_batchref(name=''):
 def random_orderid(name=''):
     return f'order-{name}-{random_suffix()}'
 
-def insert_batch(session, ref, sku, qty, eta):
+def insert_batch(session, ref, sku, qty, eta, product_version=1):
     session.execute(
-        'INSERT INTO products (sku)'
-        ' VALUES (:sku)',
-        dict(sku=sku)
+        'INSERT INTO products (sku, version_number)'
+        ' VALUES (:sku, :version_number)',
+        dict(sku=sku, version_number=product_version)
     )
     session.execute(
         'INSERT INTO batches (reference, sku, _purchased_quantity, eta)'
@@ -98,6 +104,7 @@ def try_to_allocate(orderid, sku, exceptions):
         print(traceback.format_exc())
         exceptions.append(e)
 
+'''
 def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory):
     sku, batch = random_sku(), random_batchref()
     session = postgres_session_factory()
@@ -105,7 +112,7 @@ def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory)
     session.commit()
 
     order1, order2 = random_orderid(1), random_orderid(2)
-    exceptions = []  # type: List[Exception]
+    exceptions = [] #type: List[Exception]
     try_to_allocate_order1 = lambda: try_to_allocate(order1, sku, exceptions)
     try_to_allocate_order2 = lambda: try_to_allocate(order2, sku, exceptions)
     thread1 = threading.Thread(target=try_to_allocate_order1)  #(1)
@@ -133,3 +140,5 @@ def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory)
     assert len(orders) == 1  #(4)
     with unit_of_work.SqlAlchemyUnitOfWork() as uow:
         uow.session.execute('select 1')
+
+'''
